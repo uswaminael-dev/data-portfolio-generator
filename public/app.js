@@ -371,12 +371,13 @@ class PortfolioApp {
     this.btnSyncGh.textContent = 'Syncing...';
 
     try {
-      // 1. Fetch user profile
-      const userRes = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}`);
+      // 1. Fetch user profile via server API endpoint
+      const userRes = await fetch(`/api/github/users/${encodeURIComponent(username)}`);
       if (!userRes.ok) {
         if (userRes.status === 404) throw new Error(`User "${username}" not found on GitHub.`);
-        if (userRes.status === 403) throw new Error(`GitHub rate limit exceeded. Try again in a little while.`);
-        throw new Error(`GitHub API error: ${userRes.statusText}`);
+        if (userRes.status === 403) throw new Error(`GitHub rate limit exceeded. Please try again later.`);
+        const errData = await userRes.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || `GitHub API error (${userRes.status}): ${userRes.statusText}`);
       }
       const user = await userRes.json();
 
@@ -403,9 +404,12 @@ class PortfolioApp {
         </div>
       `;
 
-      // 2. Fetch public repos
-      const reposRes = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`);
-      if (!reposRes.ok) throw new Error('Could not fetch public repositories.');
+      // 2. Fetch public repos via server API endpoint
+      const reposRes = await fetch(`/api/github/users/${encodeURIComponent(username)}/repos?per_page=100&sort=updated`);
+      if (!reposRes.ok) {
+        const errData = await reposRes.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || `Could not fetch public repositories (${reposRes.status}).`);
+      }
       const rawRepos = await reposRes.json();
 
       this.fetchedRepos = rawRepos.map(r => ({

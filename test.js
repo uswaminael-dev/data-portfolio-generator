@@ -1,9 +1,27 @@
 /**
  * Automated Verification Suite for Student & Developer Portfolio Generator
+ * Includes tests for deployable templates, local server, and Vercel serverless handlers.
  */
 
 import assert from 'assert';
 import { renderDeployablePortfolio } from './public/template/portfolio.js';
+import healthHandler from './api/health.js';
+import githubHandler from './api/github/[...path].js';
+
+function createMockRes() {
+  const headers = {};
+  let statusCode = 200;
+  let body = null;
+  return {
+    setHeader(key, val) { headers[key] = val; },
+    status(code) { statusCode = code; return this; },
+    json(data) { body = data; return this; },
+    end() { return this; },
+    getHeaders() { return headers; },
+    getStatusCode() { return statusCode; },
+    getBody() { return body; }
+  };
+}
 
 async function runTests() {
   console.log('🧪 Starting Portfolio Generator Verification Tests...\n');
@@ -99,7 +117,58 @@ async function runTests() {
   assert(emptyHtml.includes('<!DOCTYPE html>'), 'Must render valid HTML even with empty state');
   console.log('   ✓ Empty state handled gracefully.');
 
-  console.log('\n🎉 ALL VERIFICATION TESTS PASSED!\n');
+  // 4. Test Vercel Serverless Function: /api/health
+  console.log('\n4️⃣ Testing Vercel Serverless Function: api/health.js...');
+  const healthReq = { method: 'GET' };
+  const healthRes = createMockRes();
+  await healthHandler(healthReq, healthRes);
+
+  assert.strictEqual(healthRes.getStatusCode(), 200, 'Health endpoint must return 200');
+  assert.strictEqual(healthRes.getHeaders()['Access-Control-Allow-Origin'], '*', 'Health must have CORS origin header');
+  const healthBody = healthRes.getBody();
+  assert.strictEqual(healthBody.status, 'ok', 'Health status must be "ok"');
+  assert(typeof healthBody.uptime === 'number', 'Uptime must be a number');
+  assert(typeof healthBody.timestamp === 'string', 'Timestamp must be an ISO string');
+  console.log(`   ✓ api/health.js responded with: ${JSON.stringify(healthBody)}`);
+
+  // Test OPTIONS preflight for health
+  const healthOptionsRes = createMockRes();
+  await healthHandler({ method: 'OPTIONS' }, healthOptionsRes);
+  assert.strictEqual(healthOptionsRes.getStatusCode(), 204, 'OPTIONS on health must return 204');
+  console.log('   ✓ api/health.js preflight OPTIONS returned 204');
+
+  // 5. Test Vercel Serverless Catch-All Function: api/github/[...path].js
+  console.log('\n5️⃣ Testing Vercel Serverless Catch-All: api/github/[...path].js...');
+  
+  // Test OPTIONS preflight for github proxy
+  const ghOptionsRes = createMockRes();
+  await githubHandler({ method: 'OPTIONS' }, ghOptionsRes);
+  assert.strictEqual(ghOptionsRes.getStatusCode(), 204, 'OPTIONS on github must return 204');
+  console.log('   ✓ api/github/[...path].js preflight OPTIONS returned 204');
+
+  // Test live GitHub proxy call with query params
+  console.log('   Testing query param preservation and public user fetch...');
+  const ghReq = {
+    method: 'GET',
+    url: '/api/github/users/octocat/repos?per_page=2&sort=updated',
+    query: {
+      path: ['users', 'octocat', 'repos'],
+      per_page: '2',
+      sort: 'updated'
+    },
+    headers: {}
+  };
+  const ghRes = createMockRes();
+  await githubHandler(ghReq, ghRes);
+
+  assert.strictEqual(ghRes.getStatusCode(), 200, 'GitHub proxy endpoint must forward and return 200');
+  assert.strictEqual(ghRes.getHeaders()['Access-Control-Allow-Origin'], '*', 'GitHub proxy must have CORS origin header');
+  const ghBody = ghRes.getBody();
+  assert(Array.isArray(ghBody), 'Repos endpoint must return an array');
+  assert(ghBody.length <= 2, 'Query parameter per_page=2 must be preserved and respected');
+  console.log(`   ✓ api/github/[...path].js returned ${ghBody.length} repos (preserved per_page=2 and sort=updated)`);
+
+  console.log('\n🎉 ALL VERIFICATION TESTS PASSED CLEANLY!\n');
 }
 
 runTests().catch(err => {
