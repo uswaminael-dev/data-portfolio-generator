@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PortfolioCraft — Student & Developer Portfolio Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Studio Top Bar -->
+  <header class="studio-header">
+    <div class="studio-brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">
+        <span class="brand-name">PortfolioCraft</span>
+        <span class="brand-tag">For Students & Developers</span>
+      </div>
+    </div>
+
+    <div class="studio-toolbar">
+      <!-- Quick Sample Presets -->
+      <div class="toolbar-group">
+        <label class="toolbar-label">Sample Profile:</label>
+        <select id="preset-select" class="studio-select">
+          <option value="cs_student" selected>🎓 CS Student (Maya Lin)</option>
+          <option value="web_dev">💻 Full-Stack Dev (David Kim)</option>
+          <option value="blank">+ Start Blank</option>
+        </select>
+      </div>
+
+      <!-- Device Viewport Switcher -->
+      <div class="device-switcher">
+        <button class="device-btn active" data-device="desktop" title="Desktop View">🖥️ Desktop</button>
+        <button class="device-btn" data-device="tablet" title="Tablet View">📱 Tablet</button>
+        <button class="device-btn" data-device="mobile" title="Mobile View">📱 Mobile</button>
+      </div>
+
+      <!-- JSON Backup & Restore -->
+      <button id="btn-save-json" class="btn-studio btn-studio-secondary" title="Save draft JSON">
+        💾 Save JSON
+      </button>
+      <button id="btn-load-json" class="btn-studio btn-studio-secondary" title="Load draft JSON">
+        📂 Load JSON
+      </button>
+      <input type="file" id="json-file-input" accept=".json" style="display: none;">
+
+      <!-- Primary Export CTA -->
+      <button id="btn-export-html" class="btn-studio btn-studio-primary" title="Download standalone deployable index.html">
+        ⚡ Download HTML Portfolio
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <div class="studio-workspace">
+    <!-- Left Editor Pane -->
+    <aside class="editor-pane">
+      <!-- Section Navigation Tabs -->
+      <div class="editor-tabs">
+        <button class="editor-tab active" data-tab="github">🐙 1. GitHub Sync</button>
+        <button class="editor-tab" data-tab="profile">👤 2. Profile</button>
+        <button class="editor-tab" data-tab="projects">🚀 3. Projects</button>
+        <button class="editor-tab" data-tab="skills">🛠️ 4. Skills</button>
+        <button class="editor-tab" data-tab="education">🎓 5. Education</button>
+      </div>
+
+      <div class="editor-body">
+        <!-- TAB 1: GitHub Sync -->
+        <div class="tab-pane active" id="tab-github">
+          <div class="section-heading">
+            <h3>GitHub Integration</h3>
+            <p>Enter your GitHub username to fetch your profile information and public repositories.</p>
+          </div>
+
+          <div class="input-card">
+            <label class="form-label">GitHub Username</label>
+            <div class="input-row">
+              <input type="text" id="gh-username" class="form-input" placeholder="e.g. torvalds, octocat, or your handle">
+              <button id="btn-sync-gh" class="btn-studio btn-studio-primary">Sync GitHub</button>
+            </div>
+          </div>
+
+          <!-- Synced Profile Preview -->
+          <div id="gh-profile-preview" class="gh-profile-box" style="display: none;"></div>
+
+          <!-- Repository Checkbox List -->
+          <div class="repos-selection-section">
+            <div class="repos-selection-header">
+              <span class="subheading">Select Repositories to Feature</span>
+              <span id="repo-count-badge" class="count-badge">0 repos</span>
+            </div>
+            <p class="helper-text">Check the repositories you want to showcase in your portfolio.</p>
+            <div id="gh-repos-list" class="repos-checklist">
+              <div class="empty-state">
+                Enter your GitHub username above and click <strong>Sync GitHub</strong> to load your repositories.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Profile & About -->
+        <div class="tab-pane" id="tab-profile">
+          <div class="section-heading">
+            <h3>Profile & Contact Details</h3>
+            <p>Tell visitors and recruiters who you are and what you are looking for.</p>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" id="inp-name" class="form-input" placeholder="e.g. Maya Lin">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role / Headline</label>
+              <input type="text" id="inp-role" class="form-input" placeholder="e.g. CS Student @ UC Berkeley">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Short Bio / Elevator Pitch</label>
+            <textarea id="inp-bio" class="form-textarea" placeholder="Describe your focus, passions, and background..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input type="text" id="inp-location" class="form-input" placeholder="e.g. Berkeley, CA (Open to Relocation)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status Badge</label>
+              <input type="text" id="inp-status" class="form-input" placeholder="e.g. Seeking Summer 2027 Internships">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Avatar Image URL</label>
+            <input type="text" id="inp-avatar" class="form-input" placeholder="https://...">
+          </div>
+
+          <div class="subheading" style="margin-top: 1.5rem; margin-bottom: 0.75rem;">Social & Contact Links</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" id="inp-email" class="form-input" placeholder="you@university.edu">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GitHub Profile URL</label>
+              <input type="text" id="inp-github" class="form-input" placeholder="https://github.com/...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">LinkedIn Profile URL</label>
+              <input type="text" id="inp-linkedin" class="form-input" placeholder="https://linkedin.com/in/...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Personal Website / Blog</label>
+              <input type="text" id="inp-website" class="form-input" placeholder="https://yourname.dev">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Twitter / X URL (Optional)</label>
+            <input type="text" id="inp-twitter" class="form-input" placeholder="https://x.com/...">
+          </div>
+        </div>
+
+        <!-- TAB 3: Featured Projects -->
+        <div class="tab-pane" id="tab-projects">
+          <div class="section-heading" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h3>Featured Projects</h3>
+              <p>Add, edit, or reorder projects to showcase in your portfolio.</p>
+            </div>
+            <button id="btn-add-custom-project" class="btn-studio btn-studio-primary" style="font-size: 0.75rem;">+ Add Project</button>
+          </div>
+
+          <div id="projects-editor-list" class="projects-list-container"></div>
+        </div>
+
+        <!-- TAB 4: Skills -->
+        <div class="tab-pane" id="tab-skills">
+          <div class="section-heading">
+            <h3>Technical Skills</h3>
+            <p>Comma-separated list of your technical competencies.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">💻 Languages</label>
+            <input type="text" id="inp-skills-languages" class="form-input" placeholder="Python, JavaScript, TypeScript, C++, Java, SQL">
+            <span class="helper-text">Separate each language with a comma.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">⚙️ Frameworks & Libraries</label>
+            <input type="text" id="inp-skills-frameworks" class="form-input" placeholder="React, Node.js, Express, Next.js, PyTorch, Tailwind CSS">
+            <span class="helper-text">Separate each framework with a comma.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">🛠️ Developer Tools & Platforms</label>
+            <input type="text" id="inp-skills-tools" class="form-input" placeholder="Git, GitHub, Docker, Linux, AWS, Vercel, PostgreSQL, Supabase">
+            <span class="helper-text">Separate each tool with a comma.</span>
+          </div>
+        </div>
+
+        <!-- TAB 5: Education & Achievements -->
+        <div class="tab-pane" id="tab-education">
+          <div class="section-heading" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h3>Education</h3>
+              <p>Your academic background, degree, and coursework.</p>
+            </div>
+            <button id="btn-add-education" class="btn-studio btn-studio-secondary" style="font-size: 0.75rem;">+ Add School</button>
+          </div>
+
+          <div id="education-editor-list"></div>
+
+          <div class="section-heading" style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h3>Achievements & Awards</h3>
+              <p>Hackathon wins, certifications, and honors.</p>
+            </div>
+            <button id="btn-add-achievement" class="btn-studio btn-studio-secondary" style="font-size: 0.75rem;">+ Add Achievement</button>
+          </div>
+
+          <div id="achievements-editor-list"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Live Preview Pane -->
+    <main class="preview-pane">
+      <div id="preview-wrapper" class="preview-wrapper device-desktop">
+        <!-- Mock Browser Chrome -->
+        <div class="browser-bar">
+          <div class="browser-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <div class="browser-url">https://your-portfolio.dev</div>
+        </div>
+
+        <!-- Live Iframe -->
+        <iframe id="portfolio-preview-frame" class="portfolio-frame" title="Live Portfolio Preview"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Application Logic -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

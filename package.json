@@ -1,0 +1,22 @@
+{
+  "name": "data-portfolio-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Professional Interactive Data Portfolio Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "data-portfolio",
+    "machine-learning",
+    "data-science",
+    "data-engineering",
+    "portfolio-generator",
+    "github"
+  ],
+  "author": "DataFolio",
+  "license": "MIT"
+}
